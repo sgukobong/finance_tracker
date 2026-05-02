@@ -12,6 +12,15 @@
         darkMode: "class",
         theme: {
           extend: {
+            keyframes: {
+                'fade-in-up': {
+                    '0%': { opacity: '0', transform: 'translateY(16px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                }
+            },
+            animation: {
+                'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
+            },
             "colors": {
                     "on-tertiary-fixed-variant": "#005321",
                     "on-primary": "#ffffff",
@@ -123,7 +132,7 @@
 </header>
 <!-- Search & Filters Sticky Section -->
 <main class="pt-20 px-6">
-<div class="mb-6">
+<div class="mb-6 opacity-0 animate-fade-in-up" style="animation-delay: 50ms;">
 <h2 class="font-headline-md text-headline-md text-zinc-900 mb-4">Transactions</h2>
 <!-- Search Bar -->
 <div class="relative group mb-4">
@@ -142,7 +151,7 @@
 <!-- Transactions List -->
 <div class="space-y-6">
 <!-- Date Group -->
-<div>
+<div class="opacity-0 animate-fade-in-up" style="animation-delay: 150ms;">
 <p class="font-label-md text-zinc-400 uppercase tracking-widest mb-3">Today, Oct 24</p>
 <div class="space-y-3">
 <!-- Transaction Item 1 (Email Source) -->
@@ -186,7 +195,7 @@
 </div>
 </div>
 <!-- Date Group -->
-<div>
+<div class="opacity-0 animate-fade-in-up" style="animation-delay: 250ms;">
 <p class="font-label-md text-zinc-400 uppercase tracking-widest mb-3">Yesterday, Oct 23</p>
 <div class="space-y-3">
 <!-- Transaction Item 3 (SMS Source) -->
@@ -250,23 +259,27 @@
 </div>
 </div>
 </main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-28 right-6 w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 z-40 group">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300">add</span>
+</button>
 <!-- BottomNavBar -->
 <nav class="fixed bottom-0 w-full z-50 pb-safe bg-white border-t border-zinc-100 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] flex justify-around items-center h-20 px-4">
-<button class="flex flex-col items-center justify-center text-zinc-400 opacity-60 hover:text-zinc-900 transition-transform active:scale-90 duration-300 ease-out">
+<a class="flex flex-col items-center justify-center text-zinc-400 opacity-60 hover:text-zinc-900 transition-transform active:scale-90 duration-300 ease-out" href="dashboard.html">
 <span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
 <span class="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">Dashboard</span>
-</button>
-<button class="flex flex-col items-center justify-center text-zinc-900 scale-110 active:scale-90 transition-transform duration-300 ease-out">
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-900 scale-110 active:scale-90 transition-transform duration-300 ease-out" href="transactions_list.html">
 <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
 <span class="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">Activity</span>
-</button>
-<button class="flex flex-col items-center justify-center text-zinc-400 opacity-60 hover:text-zinc-900 transition-transform active:scale-90 duration-300 ease-out">
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-400 opacity-60 hover:text-zinc-900 transition-transform active:scale-90 duration-300 ease-out" href="scan_receipt.html">
 <span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
 <span class="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">Scan</span>
-</button>
-<button class="flex flex-col items-center justify-center text-zinc-400 opacity-60 hover:text-zinc-900 transition-transform active:scale-90 duration-300 ease-out">
+</a>
+<a class="flex flex-col items-center justify-center text-zinc-400 opacity-60 hover:text-zinc-900 transition-transform active:scale-90 duration-300 ease-out" href="settings_profile.html">
 <span class="material-symbols-outlined" data-icon="more_horiz">more_horiz</span>
 <span class="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">More</span>
-</button>
+</a>
 </nav>
 </body></html>

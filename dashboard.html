@@ -13,6 +13,15 @@
             darkMode: "class",
             theme: {
                 extend: {
+                    keyframes: {
+                        'fade-in-up': {
+                            '0%': { opacity: '0', transform: 'translateY(16px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
+                    },
                     "colors": {
                         "on-tertiary-fixed-variant": "#005321",
                         "on-primary": "#ffffff",
@@ -143,7 +152,7 @@
 </header>
 <main class="pt-24 pb-32 px-6 max-w-lg mx-auto">
 <!-- Status Indicators (Sync Status) -->
-<section class="mb-8">
+<section class="mb-8 opacity-0 animate-fade-in-up" style="animation-delay: 50ms;">
 <div class="flex gap-3 overflow-x-auto hide-scrollbar">
 <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/30">
 <span class="w-2 h-2 rounded-full bg-on-tertiary-container animate-pulse"></span>
@@ -156,7 +165,7 @@
 </div>
 </section>
 <!-- Financial Snapshot Hero -->
-<section class="mb-10">
+<section class="mb-10 opacity-0 animate-fade-in-up" style="animation-delay: 150ms;">
 <div class="bg-primary rounded-3xl p-8 text-on-primary shadow-2xl shadow-primary/20 relative overflow-hidden">
 <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
 <p class="font-label-md text-label-md opacity-70 mb-1">Total Balance</p>
@@ -180,7 +189,7 @@
 </div>
 </section>
 <!-- Bento Insights -->
-<section class="mb-10">
+<section class="mb-10 opacity-0 animate-fade-in-up" style="animation-delay: 250ms;">
 <h2 class="font-headline-md text-[24px] mb-4">Financial Insights</h2>
 <div class="bento-grid">
 <div class="col-span-1 bg-secondary-container rounded-3xl p-5 flex flex-col justify-between aspect-square">
@@ -200,7 +209,7 @@
 </div>
 </section>
 <!-- Transaction Feed -->
-<section class="mb-6">
+<section class="mb-6 opacity-0 animate-fade-in-up" style="animation-delay: 350ms;">
 <div class="flex justify-between items-end mb-6">
 <h2 class="font-headline-md text-[24px]">Recent Activity</h2>
 <button class="text-secondary font-label-md text-label-md">View All</button>
@@ -261,25 +270,29 @@
 </div>
 </section>
 </main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-28 right-6 w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 z-40 group">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300">add</span>
+</button>
 <!-- BottomNavBar -->
 <nav class="fixed bottom-0 w-full z-50 pb-safe bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-800 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] flex justify-around items-center h-20 px-4">
 <!-- Dashboard (Active) -->
-<a class="flex flex-col items-center justify-center text-zinc-900 dark:text-zinc-50 scale-110 active:scale-90 transition-transform duration-300 ease-out" href="#">
+<a class="flex flex-col items-center justify-center text-zinc-900 dark:text-zinc-50 scale-110 active:scale-90 transition-transform duration-300 ease-out" href="dashboard.html">
 <span class="material-symbols-outlined" data-icon="grid_view" style="font-variation-settings: 'FILL' 1;">grid_view</span>
 <span class="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">Dashboard</span>
 </a>
 <!-- Activity -->
-<a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 opacity-60 hover:text-zinc-900 dark:hover:text-zinc-50 active:scale-90 transition-transform duration-300 ease-out" href="#">
+<a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 opacity-60 hover:text-zinc-900 dark:hover:text-zinc-50 active:scale-90 transition-transform duration-300 ease-out" href="transactions_list.html">
 <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
 <span class="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">Activity</span>
 </a>
 <!-- Scan -->
-<a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 opacity-60 hover:text-zinc-900 dark:hover:text-zinc-50 active:scale-90 transition-transform duration-300 ease-out" href="#">
+<a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 opacity-60 hover:text-zinc-900 dark:hover:text-zinc-50 active:scale-90 transition-transform duration-300 ease-out" href="scan_receipt.html">
 <span class="material-symbols-outlined" data-icon="photo_camera">photo_camera</span>
 <span class="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">Scan</span>
 </a>
 <!-- More -->
-<a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 opacity-60 hover:text-zinc-900 dark:hover:text-zinc-50 active:scale-90 transition-transform duration-300 ease-out" href="#">
+<a class="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 opacity-60 hover:text-zinc-900 dark:hover:text-zinc-50 active:scale-90 transition-transform duration-300 ease-out" href="settings_profile.html">
 <span class="material-symbols-outlined" data-icon="more_horiz">more_horiz</span>
 <span class="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">More</span>
 </a>
