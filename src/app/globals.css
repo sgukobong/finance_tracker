@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@config "../../assets/js/tailwind.config.js";
 
 @layer utilities {
   .material-symbols-outlined {

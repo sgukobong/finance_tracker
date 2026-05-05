@@ -18,8 +18,10 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Manrope:wght@600;700;800;900&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body-md text-on-surface bg-background">
-        {children}
+      <body className="font-['Inter'] text-[#191c1d] bg-zinc-200 flex justify-center min-h-screen">
+        <div className="w-full max-w-[414px] min-h-screen bg-[#f8f9fa] relative shadow-2xl ring-1 ring-zinc-300 overflow-x-hidden">
+          {children}
+        </div>
       </body>
     </html>
   );
