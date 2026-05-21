@@ -1,116 +1,184 @@
-import React from 'react';
-import TopAppBar from '@/components/TopAppBar';
-import BottomNavBar from '@/components/BottomNavBar';
-import FAB from '@/components/FAB';
+import { prisma } from '@/lib/prisma';
+import Link from 'next/link';
 
-export default function Dashboard() {
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+}
+
+function timeAgo(date: Date) {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffH < 1) return 'Just now';
+  if (diffH < 24) return `${diffH}h ago`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD === 1) return 'Yesterday';
+  return `${diffD}d ago`;
+}
+
+const sourceIcons: Record<string, { icon: string; color: string }> = {
+  email: { icon: 'mail', color: 'text-[#4854bb]' },
+  sms: { icon: 'sms', color: 'text-zinc-800' },
+  receipt: { icon: 'receipt_long', color: 'text-[#009844]' },
+  manual: { icon: 'edit', color: 'text-zinc-500' },
+};
+
+export default async function Dashboard() {
+  const user = await prisma.user.findFirst();
+  if (!user) return <p className="p-8">No user found. Please seed the database.</p>;
+
+  const transactions = await prisma.transaction.findMany({
+    where: { userId: user.id },
+    include: { category: true },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const balance = totalIncome - totalExpenses;
+  const savingsRate = totalIncome > 0 ? Math.round(((totalIncome - totalExpenses) / totalIncome) * 100) : 0;
+
+  const recentTransactions = transactions.slice(0, 5);
+
+  const categorySpending = transactions
+    .filter(t => t.type === 'expense')
+    .reduce<Record<string, { name: string; total: number; icon: string; color: string }>>((acc, t) => {
+      const key = t.category.name;
+      if (!acc[key]) acc[key] = { name: key, total: 0, icon: t.category.icon, color: t.category.color };
+      acc[key].total += t.amount;
+      return acc;
+    }, {});
+
+  const topCategories = Object.values(categorySpending).sort((a, b) => b.total - a.total).slice(0, 4);
+
   return (
-    <>
-      <TopAppBar title="Fintrack" />
-      
-      <main className="pt-24 pb-32 px-6 max-w-lg mx-auto">
-        {/* Status Indicators (Sync Status) */}
-        <section className="mb-8 opacity-0 animate-[fade-in-up_0.5s_ease-out_forwards]" style={{ animationDelay: '50ms' }}>
-          <div className="flex gap-3 overflow-x-auto hide-scrollbar">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f3f4f5] border border-[#c7c6ca]/30">
-              <span className="w-2 h-2 rounded-full bg-[#009844] animate-pulse"></span>
-              <span className="font-label-md text-[14px] text-[#46464a]">SMS Sync Active</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f3f4f5] border border-[#c7c6ca]/30">
-              <span className="w-2 h-2 rounded-full bg-[#009844] animate-pulse"></span>
-              <span className="font-label-md text-[14px] text-[#46464a]">Email Scanning</span>
-            </div>
+    <div className="min-h-screen pb-24 md:pb-8">
+      {/* Header */}
+      <header className="bg-white border-b border-zinc-100 px-6 py-5 md:px-10 md:py-6">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div>
+            <p className="text-zinc-500 text-sm">Welcome back,</p>
+            <h1 className="font-['Manrope'] font-bold text-2xl md:text-3xl text-zinc-900">{user.name}</h1>
           </div>
-        </section>
+          <div className="flex items-center gap-3">
+            {user.smsActive && (
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f3f4f5] border border-[#c7c6ca]/30">
+                <span className="w-2 h-2 rounded-full bg-[#009844] animate-pulse" />
+                <span className="text-xs font-semibold text-zinc-500">SMS Active</span>
+              </div>
+            )}
+            {user.gmailLinked && (
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f3f4f5] border border-[#c7c6ca]/30">
+                <span className="w-2 h-2 rounded-full bg-[#009844] animate-pulse" />
+                <span className="text-xs font-semibold text-zinc-500">Email Linked</span>
+              </div>
+            )}
+            <button className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-600 hover:bg-zinc-200 transition-colors">
+              <span className="material-symbols-outlined">notifications</span>
+            </button>
+          </div>
+        </div>
+      </header>
 
-        {/* Financial Snapshot Hero */}
-        <section className="mb-10 opacity-0 animate-[fade-in-up_0.5s_ease-out_forwards]" style={{ animationDelay: '150ms' }}>
-          <div className="bg-black rounded-3xl p-8 text-white shadow-2xl shadow-black/20 relative overflow-hidden">
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-            <p className="font-label-md text-[14px] opacity-70 mb-1">Total Balance</p>
-            <h1 className="mb-6 text-[48px] font-semibold leading-[1.2] tracking-[-0.02em] font-manrope">$12,480.50</h1>
-            <div className="grid grid-cols-2 gap-4">
+      <div className="max-w-5xl mx-auto px-6 md:px-10 py-6 md:py-8 space-y-8">
+        {/* Financial Snapshot */}
+        <section className="opacity-0 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <div className="bg-black rounded-3xl p-6 md:p-8 text-white shadow-2xl shadow-black/20 relative overflow-hidden">
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+            <p className="text-sm opacity-70 mb-1 font-semibold">Total Balance</p>
+            <h2 className="text-4xl md:text-5xl font-semibold font-['Manrope'] tracking-tight mb-6">
+              {formatCurrency(balance)}
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="material-symbols-outlined text-sm">arrow_downward</span>
-                  <span className="font-label-md text-[12px] uppercase tracking-wider opacity-70">Income</span>
+                  <span className="text-[12px] uppercase tracking-wider opacity-70 font-semibold">Income</span>
                 </div>
-                <p className="font-headline-md text-[20px] font-semibold font-manrope">$4,250.00</p>
+                <p className="font-['Manrope'] font-semibold text-xl">{formatCurrency(totalIncome)}</p>
               </div>
               <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="material-symbols-outlined text-sm">arrow_upward</span>
-                  <span className="font-label-md text-[12px] uppercase tracking-wider opacity-70">Expenses</span>
+                  <span className="text-[12px] uppercase tracking-wider opacity-70 font-semibold">Expenses</span>
                 </div>
-                <p className="font-headline-md text-[20px] font-semibold font-manrope">$2,180.40</p>
+                <p className="font-['Manrope'] font-semibold text-xl">{formatCurrency(totalExpenses)}</p>
+              </div>
+              <div className="hidden md:block bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="material-symbols-outlined text-sm">savings</span>
+                  <span className="text-[12px] uppercase tracking-wider opacity-70 font-semibold">Savings Rate</span>
+                </div>
+                <p className="font-['Manrope'] font-semibold text-xl">{savingsRate}%</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Bento Insights */}
-        <section className="mb-10 opacity-0 animate-[fade-in-up_0.5s_ease-out_forwards]" style={{ animationDelay: '250ms' }}>
-          <h2 className="font-manrope text-[24px] font-semibold mb-4">Financial Insights</h2>
-          <div className="bento-grid">
-            <div className="col-span-1 bg-[#8692fd] rounded-3xl p-5 flex flex-col justify-between aspect-square">
-              <span className="material-symbols-outlined text-[#16238e] text-3xl">savings</span>
+        {/* Insights + Top Spending */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+          <div className="bg-[#8692fd] rounded-3xl p-5 flex flex-col justify-between aspect-square md:aspect-auto md:min-h-[160px]">
+            <span className="material-symbols-outlined text-[#16238e] text-3xl">savings</span>
+            <div>
+              <p className="text-[#16238e] text-[12px] uppercase mb-1 font-semibold">Savings Rate</p>
+              <p className="font-['Manrope'] font-semibold text-lg text-[#16238e]">{savingsRate}%</p>
+            </div>
+          </div>
+          <div className="bg-[#e1e3e4] rounded-3xl p-5 flex flex-col justify-between aspect-square md:aspect-auto md:min-h-[160px]">
+            <span className="material-symbols-outlined text-[#191c1d] text-3xl">auto_awesome</span>
+            <div>
+              <p className="text-[#46464a] text-[12px] uppercase mb-1 font-semibold">Transactions</p>
+              <p className="font-['Manrope'] font-semibold text-lg text-[#191c1d]">{transactions.length} total</p>
+            </div>
+          </div>
+          {topCategories.slice(0, 2).map((cat) => (
+            <div key={cat.name} className="bg-white rounded-3xl p-5 border border-zinc-100 flex flex-col justify-between aspect-square md:aspect-auto md:min-h-[160px]">
+              <span className="material-symbols-outlined text-3xl" style={{ color: cat.color }}>{cat.icon}</span>
               <div>
-                <p className="font-label-md text-[#16238e] text-[12px] uppercase mb-1">Savings Goal</p>
-                <p className="font-manrope font-semibold text-[18px] text-[#16238e]">84% reached</p>
+                <p className="text-zinc-500 text-[12px] uppercase mb-1 font-semibold">{cat.name}</p>
+                <p className="font-['Manrope'] font-semibold text-lg text-zinc-900">{formatCurrency(cat.total)}</p>
               </div>
             </div>
-            <div className="col-span-1 bg-[#e1e3e4] rounded-3xl p-5 flex flex-col justify-between aspect-square">
-              <span className="material-symbols-outlined text-[#191c1d] text-3xl">auto_awesome</span>
-              <div>
-                <p className="font-label-md text-[#46464a] text-[12px] uppercase mb-1">Smart Tip</p>
-                <p className="font-manrope font-semibold text-[16px] leading-tight text-[#191c1d]">Reduce dining by $50 this week</p>
-              </div>
-            </div>
-          </div>
+          ))}
         </section>
 
-        {/* Transaction Feed */}
-        <section className="mb-6 opacity-0 animate-[fade-in-up_0.5s_ease-out_forwards]" style={{ animationDelay: '350ms' }}>
-          <div className="flex justify-between items-end mb-6">
-            <h2 className="font-manrope font-semibold text-[24px]">Recent Activity</h2>
-            <button className="text-[#4854bb] font-label-md text-[14px] font-semibold">View All</button>
+        {/* Recent Activity */}
+        <section className="opacity-0 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          <div className="flex justify-between items-end mb-4">
+            <h2 className="font-['Manrope'] font-semibold text-xl md:text-2xl">Recent Activity</h2>
+            <Link href="/transactions" className="text-[#4854bb] font-semibold text-sm">
+              View All
+            </Link>
           </div>
-          <div className="space-y-4">
-            
-            {/* Transaction Item */}
-            <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#edeeef] flex items-center justify-center">
-                  <span className="material-symbols-outlined text-zinc-600">shopping_bag</span>
+          <div className="bg-white rounded-2xl border border-zinc-100 divide-y divide-zinc-100">
+            {recentTransactions.map((txn) => {
+              const src = sourceIcons[txn.source] || sourceIcons['manual'];
+              return (
+                <div key={txn.id} className="flex items-center justify-between p-4 hover:bg-zinc-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center relative" style={{ backgroundColor: `${txn.category.color}15` }}>
+                      <span className="material-symbols-outlined" style={{ color: txn.category.color }}>{txn.category.icon}</span>
+                      <div className="absolute -top-1 -right-1 bg-white p-0.5 rounded-full shadow-sm border border-zinc-50">
+                        <span className={`material-symbols-outlined text-[12px] ${src.color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{src.icon}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm text-zinc-900">{txn.merchant}</p>
+                      <p className="text-xs text-zinc-400">{txn.category.name} &middot; {timeAgo(txn.createdAt)}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-semibold text-sm ${txn.type === 'income' ? 'text-[#009844]' : 'text-zinc-900'}`}>
+                      {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
+                    </p>
+                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">{txn.status}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-manrope font-semibold text-[16px] text-zinc-900">Apple Store</p>
-                  <p className="font-inter text-[13px] text-zinc-500">Subscription • 2h ago</p>
-                </div>
-              </div>
-              <p className="font-manrope font-semibold text-[16px] text-zinc-900">-$12.99</p>
-            </div>
-            
-            {/* Transaction Item */}
-            <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#009844]/10 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[#009844]">account_balance_wallet</span>
-                </div>
-                <div>
-                  <p className="font-manrope font-semibold text-[16px] text-zinc-900">Monthly Salary</p>
-                  <p className="font-inter text-[13px] text-zinc-500">Income • 5h ago</p>
-                </div>
-              </div>
-              <p className="font-manrope font-semibold text-[16px] text-[#009844]">+$3,200.00</p>
-            </div>
-
+              );
+            })}
           </div>
         </section>
-      </main>
-
-      <FAB />
-      <BottomNavBar />
-    </>
+      </div>
+    </div>
   );
 }
